@@ -52,7 +52,7 @@ bash install.sh --key YOUR_KEY --target api.other-provider.com --auth bearer
 
 ### 配置 VS Code 插件（推荐）
 
-建议在 VS Code（或 Cursor / Trae 等类 VS Code 编辑器）中安装 **Claude Code 插件**，通过 IDE 内的终端面板使用 Claude Code。这样可以：
+建议在 VS Code（或 Cursor / Trae 等类 VS Code 编辑器）中安装 **claude for vscode**，通过 IDE 内的终端面板使用 Claude Code。这样可以：
 
 - 直接在编辑器中查看模型的代码修改和输出
 - **拖拽或粘贴图片**（如实验截图、能谱图、拟合结果）直接发送给模型
