@@ -29,10 +29,10 @@ Claude Code  ──HTTP──▶  Catcher Proxy (:18080)  ──HTTPS──▶  
 
 ### 前提条件
 
-- Node.js 18+（`node -v` 检查）
-- Python 3.6+
-- Claude Code CLI（`npm install -g @anthropic-ai/claude-code`）
+- Linux / macOS / WSL 环境
+- Python 3.6+（系统通常自带）
 - GPUGeek API Key（或其他兼容 provider 的 key）
+- **Node.js 和 Claude Code 无需预装**——安装脚本会自动处理
 
 ### 一行安装
 
@@ -42,7 +42,14 @@ cd claude-code-export-trace
 bash install.sh --key YOUR_GPUGEEK_API_KEY
 ```
 
-安装脚本会自动完成所有配置：部署 proxy、配置 `settings.json`、安装 `/export-trace` 命令、生成启停脚本，并启动 proxy。
+安装脚本会自动完成**全部配置**：
+
+1. 检测并安装 Node.js 20（如缺失，通过 nvm + 国内镜像安装）
+2. 配置 npm 国内镜像（npmmirror.com）
+3. 安装 Claude Code CLI
+4. 部署 proxy、配置 `settings.json`
+5. 安装 `/export-trace` 命令、生成启停脚本
+6. 启动 proxy
 
 如果使用非 GPUGeek 的 API Provider：
 

@@ -54,29 +54,96 @@ if [[ -z "$API_KEY" ]]; then
   exit 1
 fi
 
+# ── Helper: detect OS ────────────────────────────────────────────────────
+detect_os() {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    OS_TYPE="macos"
+  elif [[ -f /etc/debian_version ]]; then
+    OS_TYPE="debian"
+  elif [[ -f /etc/redhat-release ]]; then
+    OS_TYPE="redhat"
+  else
+    OS_TYPE="unknown"
+  fi
+}
+
+# ── Helper: install Node.js via nvm (with Chinese mirrors) ──────────────
+install_node_via_nvm() {
+  echo ""
+  echo "  Installing Node.js via nvm (Chinese mirror)..."
+
+  export NVM_DIR="$HOME/.nvm"
+
+  # Install nvm from Gitee mirror (accessible in China)
+  curl -fsSL https://gitee.com/mirrors/nvm/raw/v0.40.1/install.sh | bash || true
+
+  # Load nvm
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+  if ! command -v nvm &>/dev/null; then
+    echo "  ERROR: nvm installation failed."
+    echo "  Please install Node.js 20 manually and re-run this script."
+    exit 1
+  fi
+
+  # Use Chinese mirror for Node.js binaries
+  export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node
+
+  nvm install 20
+  nvm use 20
+  nvm alias default 20
+  echo "  ✓ Node.js $(node -v) installed via nvm"
+}
+
+# ── Helper: configure npm Chinese mirror ─────────────────────────────────
+configure_npm_mirror() {
+  npm config set registry https://registry.npmmirror.com
+  echo "  ✓ npm registry set to npmmirror.com (Chinese mirror)"
+}
+
+# ── Helper: install Claude Code CLI ──────────────────────────────────────
+install_claude_code() {
+  echo "  Installing Claude Code CLI..."
+  npm install -g @anthropic-ai/claude-code
+  echo "  ✓ Claude Code $(claude --version 2>/dev/null || echo 'installed')"
+}
+
 # ── Preflight checks ─────────────────────────────────────────────────────
 echo "╔══════════════════════════════════════════════════╗"
 echo "║  Catcher in the Rye — Installer                 ║"
 echo "╚══════════════════════════════════════════════════╝"
 echo ""
 
-# Check Node.js
-if ! command -v node &>/dev/null; then
-  echo "ERROR: Node.js not found. Install Node.js 18+ first."
-  echo "  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -"
-  echo "  sudo apt-get install -y nodejs"
-  exit 1
-fi
-NODE_VERSION=$(node -v | sed 's/v//' | cut -d. -f1)
-if [[ "$NODE_VERSION" -lt 18 ]]; then
-  echo "ERROR: Node.js 18+ required (found v$(node -v))"
-  exit 1
-fi
-echo "  ✓ Node.js $(node -v)"
+detect_os
 
-# Check Claude Code
+# ── Step 1: Ensure Node.js 18+ ──────────────────────────────────────────
+NEED_NODE=false
+if ! command -v node &>/dev/null; then
+  NEED_NODE=true
+else
+  NODE_VERSION=$(node -v | sed 's/v//' | cut -d. -f1)
+  if [[ "$NODE_VERSION" -lt 18 ]]; then
+    echo "  ⚠ Node.js version too old ($(node -v)), need 18+"
+    NEED_NODE=true
+  fi
+fi
+
+if [[ "$NEED_NODE" == "true" ]]; then
+  echo "  Node.js 18+ not found. Installing..."
+  install_node_via_nvm
+  configure_npm_mirror
+else
+  echo "  ✓ Node.js $(node -v)"
+  # Ensure nvm is loaded if it exists (for npm commands later)
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
+fi
+
+# ── Step 2: Ensure Claude Code CLI ───────────────────────────────────────
 if ! command -v claude &>/dev/null; then
-  echo "  ⚠ Claude Code CLI not found in PATH (may still work if installed elsewhere)"
+  echo "  Claude Code CLI not found. Installing..."
+  configure_npm_mirror
+  install_claude_code
 else
   echo "  ✓ Claude Code $(claude --version 2>/dev/null || echo 'found')"
 fi
@@ -107,6 +174,11 @@ echo "  ✓ /export-trace command installed → $COMMANDS_DIR/export-trace.md"
 cat > "$START_SCRIPT" << STARTEOF
 #!/usr/bin/env bash
 # Start the Catcher proxy (background, with nohup)
+
+# Load nvm if present (needed when Node.js was installed via nvm)
+export NVM_DIR="\${NVM_DIR:-\$HOME/.nvm}"
+[ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh" 2>/dev/null || true
+
 export CATCHER_API_KEY="$API_KEY"
 export CATCHER_TARGET="$TARGET"
 export CATCHER_AUTH_MODE="$AUTH_MODE"
