@@ -50,6 +50,17 @@ bash install.sh --key YOUR_GPUGEEK_API_KEY
 bash install.sh --key YOUR_KEY --target api.other-provider.com --auth bearer
 ```
 
+### 配置 VS Code 插件（推荐）
+
+建议在 VS Code（或 Cursor / Trae 等类 VS Code 编辑器）中安装 **Claude Code 插件**，通过 IDE 内的终端面板使用 Claude Code。这样可以：
+
+- 直接在编辑器中查看模型的代码修改和输出
+- **拖拽或粘贴图片**（如实验截图、能谱图、拟合结果）直接发送给模型
+- 通过 `/ide` 命令连接 IDE，让模型直接操作编辑器中的文件
+- 更符合日常使用 VS Code 的习惯
+
+安装方式：在 VS Code 扩展市场搜索 **"Claude Code"** 并安装，然后在 VS Code 的终端中启动 `claude`。
+
 ### 验证安装
 
 ```bash
@@ -57,7 +68,7 @@ bash install.sh --key YOUR_KEY --target api.other-provider.com --auth bearer
 cat ~/.claude/catcher.log
 # 应该看到 "Catcher in the Rye — Claude Code Trace Proxy" 和 "Listening" 字样
 
-# 启动 Claude Code 测试
+# 启动 Claude Code（在 VS Code 终端中）
 claude
 ```
 
@@ -72,6 +83,7 @@ claude
 ```
 /model                  选择 opus 模型（注意：不要选择 Opus 1M）
 /config                 将 auto compact 设置为 true
+/ide                    连接 VS Code（如果在 VS Code 终端中启动）
 ```
 
 ### 核心原则：所有操作都在 Claude Code 内完成
@@ -112,9 +124,8 @@ claude
 ### 其他
 
 - 可以用中文或英文与模型交流，按自己习惯即可
-- 可以粘贴文本、代码片段、报错信息等
+- 可以粘贴文本、代码片段、报错信息；在 VS Code 中还可以直接拖拽/粘贴图片
 - 如遇到 API 错误，直接重试即可（API 存在不稳定性，属正常现象）
-- 如需 review 具体的代码修改，可以在 VS Code / Cursor 等 IDE 中安装 Claude for VS Code 插件，在命令行的 Claude Code 中通过 `/ide` 命令连接
 - 在 Claude Code 中使用 `/export-trace` 可以导出当前会话的完整轨迹
 
 ### 项目文件组织
